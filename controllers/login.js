@@ -5,27 +5,26 @@ const { User } = require('../models')
 
 router.post('/', async (req, res) => {
   const { username, password } = req.body
-
   const user = await User.findOne({ where: { username } })
 
   const passwordCorrect = password === 'secret'
 
-  if (!user || !passwordCorrect) {
+  if (!(user && passwordCorrect)) {
     return res.status(401).json({ error: 'invalid username or password' })
   }
 
-  const userForToken = {
-    username: user.username,
-    id: user.id
+  if (user.disabled) {
+    return res.status(401).json({ error: 'account disabled' })
   }
 
-  const token = jwt.sign(userForToken, SECRET)
+  const token = jwt.sign({ username: user.username, id: user.id }, SECRET)
 
-  res.status(200).json({
-    token,
-    username: user.username,
-    name: user.name
+  await Session.create({ token, userId: user.id })
+
+  res.status(200).send({
+    token, username: user.username, name: user.name
   })
 })
+
 
 module.exports = router

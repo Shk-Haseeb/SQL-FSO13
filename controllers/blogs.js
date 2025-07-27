@@ -4,6 +4,7 @@ const { Op } = require('sequelize')
 
 
 const tokenExtractor = require('../middleware/tokenExtractor')
+const { Session } = require('../models')
 const { User } = require('../models')
 
 const blogFinder = async (req, res, next) => {
